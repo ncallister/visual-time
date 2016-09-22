@@ -104,7 +104,12 @@ var Clock = (function()
   function rescheduleDraw(clock, context2d, frameTime)
   {
     var now = new Date();
-    var nextFrame = new Date(frameTime.getTime() + clock.refreshInterval);
+    var nextFrameTime = frameTime.getTime() + clock.refreshInterval;
+    while (nextFrameTime < now.getTime())
+    {
+      nextFrameTime += clock.refreshInterval;
+    }
+    var nextFrame = new Date(nextFrameTime);
     setTimeout(
         function()
         {
