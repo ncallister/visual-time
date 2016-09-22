@@ -4,7 +4,8 @@ const DEFAULT_INCLUDE_DIGITAL = false;
 const DEFAULT_REFRESH_INTERVAL = 1000;  // 1 second
 const DEFAULT_AUTO_DRAW = true;
 
-const DEFAULT_TICK_SIZE = 0.1;
+const DEFAULT_BIG_TICK_SIZE = 0.1;
+const DEFAULT_SMALL_TICK_SIZE = 0.02;
 const DEFAULT_HOUR_SIZE = 0.3;
 const DEFAULT_MINUTE_SIZE = 0.5;
 const DEFAULT_SECOND_SIZE = 0.8;
@@ -39,7 +40,8 @@ var Clock = (function()
     this.autoDraw = autoDraw;
   }
 
-  ClockConstructor.prototype.tickSize = DEFAULT_TICK_SIZE;
+  ClockConstructor.prototype.bigTickSize = DEFAULT_BIG_TICK_SIZE;
+  ClockConstructor.prototype.smallTickSize = DEFAULT_SMALL_TICK_SIZE;
   ClockConstructor.prototype.hourSize = DEFAULT_HOUR_SIZE;
   ClockConstructor.prototype.minuteSize = DEFAULT_MINUTE_SIZE;
   ClockConstructor.prototype.secondSize = DEFAULT_SECOND_SIZE;
@@ -47,50 +49,56 @@ var Clock = (function()
   function drawCircle(clock, context2d)
   {
     context2d.beginPath();
-    context2d.arc(clock.centerX, clock.centerY, clock.radius, 0, 2 * Math.PI);
+    context2d.arc(0, 0, clock.radius, 0, 2 * Math.PI);
     context2d.stroke();
   }
 
-  function drawTick(clock, context2d, angle)
+  function drawTick(clock, context2d, angle, tickSize)
   {
     context2d.rotate(angle);
     context2d.beginPath();
-    context2d.moveTo(clock.centerX, clock.centerY - clock.radius + Math.ceil((clock.radius * clock.tickSize)));
-    context2d.lineTo(clock.centerX, clock.centerY - clock.radius);
+    context2d.moveTo(0, 0 - clock.radius + Math.ceil(tickSize));
+    context2d.lineTo(0, 0 - clock.radius);
     context2d.stroke();
     context2d.rotate(-1.0 * angle);
   }
 
   function drawTicks(clock, context2d)
   {
-    for (var i = 0.0 ; i < 12.0 ; ++i)
+    var totalTicks = 12 * 5;
+    for (var i = 0.0 ; i < totalTicks ; ++i)
     {
-      drawTick(clock, context2d, i * ((2.0 * Math.PI) / 12.0));
+      var tickSize = clock.smallTickSize;
+      if (i % 5 === 0)
+      {
+        tickSize = clock.bigTickSize;
+      }
+      drawTick(clock, context2d, i * ((2.0 * Math.PI) / totalTicks), clock.radius * tickSize);
     }
   }
 
   function drawHand(clock, context2d, angle, length, width)
   {
     context2d.rotate(angle);
-    context2d.fillRect(clock.centerX - (width / 2.0), 0, Math.ceil(width), Math.ceil(length));
+    context2d.fillRect(0 - (width / 2.0), 0, Math.ceil(width), Math.ceil(length));
     context2d.rotate(-1.0 * angle);
   }
 
   function drawHourHand(clock, context2d, frameTime)
   {
-    millisThisDay = frameTime.getHours() * MS_IN_H + frameTime.getMinutes() * MS_IN_M + frameTime.getSeconds() * MS_IN_S;
-    drawHand(clock, context2d, (2.0 * Math.PI) * (millisThisDay / MS_IN_D) * 2.0, clock.hourSize, clock.radius * 0.01);
+    var millisThisDay = frameTime.getHours() * MS_IN_H + frameTime.getMinutes() * MS_IN_M + frameTime.getSeconds() * MS_IN_S;
+    drawHand(clock, context2d, (2.0 * Math.PI) * (millisThisDay / MS_IN_D) * 2.0, clock.radius * clock.hourSize, clock.radius * 0.01);
   }
 
   function drawMinuteHand(clock, context2d, frameTime)
   {
-    millisThisHour = frameTime.getMinutes() * MS_IN_M + frameTime.getSeconds() * MS_IN_S;
-    drawHand(clock, context2d, (2.0 * Math.PI) * (millisThisHour / MS_IN_H), clock.minuteSize, clock.radius * 0.01);
+    var millisThisHour = frameTime.getMinutes() * MS_IN_M + frameTime.getSeconds() * MS_IN_S;
+    drawHand(clock, context2d, (2.0 * Math.PI) * (millisThisHour / MS_IN_H), clock.radius * clock.minuteSize, clock.radius * 0.01);
   }
 
   function drawSecondHand(clock, context2d, frameTime)
   {
-    drawHand(clock, context2d, (2.0 * Math.PI) * (frameTime.getSeconds() / S_IN_M), clock.secondSize, clock.radius * 0.01);
+    drawHand(clock, context2d, (2.0 * Math.PI) * (frameTime.getSeconds() / S_IN_M), clock.radius * clock.secondSize, clock.radius * 0.01);
   }
 
   function rescheduleDraw(clock, context2d, frameTime)
@@ -105,14 +113,18 @@ var Clock = (function()
         nextFrame.getTime() - now.getTime());
   }
 
-  ClockConstructor.prototype.draw(context2d, frameTime)
+  ClockConstructor.prototype.draw = function(context2d, frameTime)
   {
+    context2d.save();
+    context2d.translate(this.centerX, this.centerY);
+    context2d.clearRect(-1 * this.radius, -1 * this.radius, 2 * this.radius, 2 * this.radius);
     drawCircle(this, context2d);
     drawTicks(this, context2d);
     drawHourHand(this, context2d, frameTime);
     drawMinuteHand(this, context2d, frameTime);
     drawSecondHand(this, context2d, frameTime);
-    if (clock.autoDraw)
+    context2d.restore();
+    if (this.autoDraw)
     {
       rescheduleDraw(this, context2d, frameTime);
     }
