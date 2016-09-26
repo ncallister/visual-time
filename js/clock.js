@@ -6,12 +6,6 @@ const DEFAULT_INCLUDE_DIGITAL = false;
 const DEFAULT_REFRESH_INTERVAL = 1000;  // 1 second
 const DEFAULT_AUTO_DRAW = true;
 
-const DEFAULT_BIG_TICK_SIZE = 0.1;
-const DEFAULT_SMALL_TICK_SIZE = 0.02;
-const DEFAULT_HOUR_SIZE = 0.3;
-const DEFAULT_MINUTE_SIZE = 0.5;
-const DEFAULT_SECOND_SIZE = 0.8;
-
 const MS_IN_S = 1000.0;
 const S_IN_M = 60.0;
 const M_IN_H = 60.0;
@@ -42,16 +36,17 @@ var Clock = (function()
     this.autoDraw = autoDraw;
   }
 
-  ClockDefinition.prototype.bigTickSize = DEFAULT_BIG_TICK_SIZE;
-  ClockDefinition.prototype.smallTickSize = DEFAULT_SMALL_TICK_SIZE;
-  ClockDefinition.prototype.hourSize = DEFAULT_HOUR_SIZE;
-  ClockDefinition.prototype.minuteSize = DEFAULT_MINUTE_SIZE;
-  ClockDefinition.prototype.secondSize = DEFAULT_SECOND_SIZE;
+  ClockDefinition.prototype.bigTickSize = 0.07;
+  ClockDefinition.prototype.smallTickSize = 0.02;
+  
+  ClockDefinition.prototype.hourSize = 0.4;
+  ClockDefinition.prototype.minuteSize = 0.8;
+  ClockDefinition.prototype.secondSize = 0.7;
 
   ClockDefinition.prototype.lineWidth = 2;
-  ClockDefinition.prototype.hourWidth = 0.02;
-  ClockDefinition.prototype.minuteWidth = 0.015;
-  ClockDefinition.prototype.secondWidth = 0.01;
+  ClockDefinition.prototype.hourWidth = 0.025;
+  ClockDefinition.prototype.minuteWidth = 0.02;
+  ClockDefinition.prototype.secondWidth = 0.005;
 
   ClockDefinition.prototype.showHourHand = true;
   ClockDefinition.prototype.showMinuteHand = true;
@@ -72,11 +67,120 @@ var Clock = (function()
 
   ClockDefinition.prototype.setColourPallete = function(face, rim, hourHand, minuteHand, secondHand)
   {
-    this.faceColour = face;
-    this.rimColour = rim;
-    this.hourHandColour = hourHand;
-    this.minuteHandColour = minuteHand;
-    this.secondHandColour = secondHand;
+    if (face)
+    {
+      this.faceColour = face;
+    }
+    if (rim)
+    {
+      this.rimColour = rim;
+    }
+    if (hourHand)
+    {
+      this.hourHandColour = hourHand;
+    }
+    if (minuteHand)
+    {
+      this.minuteHandColour = minuteHand;
+    }
+    if (secondHand)
+    {
+      this.secondHandColour = secondHand;
+    }
+  }
+  
+  ClockDefinition.prototype.extendHands = true;
+  ClockDefinition.prototype.showHandNumbers = true;
+
+  ClockDefinition.prototype.hourNumbersRadius = 1.06;
+  ClockDefinition.prototype.hourNumbersFontSize = 0.08;
+
+  ClockDefinition.prototype.minuteNumbersRadius = 0.85
+  ClockDefinition.prototype.minuteNumbersFontSize = 0.05;
+
+  ClockDefinition.prototype.setHandNumbers = function(extendHands, showHandNumbers)
+  {
+    this.extendHands = extendHands;
+    this.showHandNumbers = showHandNumbers;
+  }
+
+  ClockDefinition.prototype.showHourNumbers = true;
+  ClockDefinition.prototype.showMinuteNumbersBig = true;
+  ClockDefinition.prototype.showMinuteNumbersSmall = false;
+
+  ClockDefinition.prototype.setShowNumbers = function(hours, minutesBig, minutesSmall)
+  {
+    this.showHourNumbers = hours;
+    this.showMinuteNumbersBig = minutesBig;
+    this.showMinuteNumbersSmall = minutesSmall;
+  }
+
+
+
+  // Drawing
+
+  function drawNumber(clock, context2d, number, angle, relativeNumberRadius, relativeFontSize, style)
+  {
+    var oldColour = context2d.strokeStyle;
+    context2d.strokeStyle = clock.rimColour;
+    context2d.rotate(angle);
+    context2d.translate(0, -1 * Math.ceil(relativeNumberRadius * clock.radius));
+    context2d.rotate(-1 * angle);
+    var fontSize = Math.ceil(relativeFontSize * clock.radius);
+    var oldFont = context2d.font;
+    if (style)
+    {
+      context2d.font = style + " " + fontSize.toString() + "px sans-serif";
+    }
+    else
+    {
+      context2d.font = fontSize.toString() + "px sans-serif";
+    }
+
+    var numString = number.toString();
+    var metrix = context2d.measureText(numString);
+
+    context2d.fillText(numString, -0.5 * metrix.width, 0.5 * fontSize);
+
+    context2d.font = oldFont;
+    context2d.rotate(angle);
+    context2d.translate(0, Math.ceil(relativeNumberRadius * clock.radius));
+    context2d.rotate(-1.0 * angle);
+    context2d.strokeStyle = oldColour;
+  }
+
+  function drawNumbers(clock, context2d, frameTime)
+  {
+    for (var i = 1 ; i <= 12 ; ++i)
+    {
+      var handNumber = (clock.showHandNumbers && clock.showHourHand && i === frameTime.getHours() % 12);
+      var style = null;
+      if (handNumber)
+      {
+        style = "bold";
+      }
+      if (clock.showHourNumbers || handNumber)
+      {
+        drawNumber(clock, context2d, i, (2 * Math.PI) * (i / 12), clock.hourNumbersRadius, clock.hourNumbersFontSize, style);
+      }
+    }
+
+    for (var i = 0 ; i < 60 ; ++i)
+    {
+      var handNumber = (clock.showHandNumbers && clock.showMinuteHand && i == frameTime.getMinutes()) ||
+                       (clock.showHandNumbers && clock.showSecondHand && i == frameTime.getSeconds());
+      var style = null;
+      if (handNumber)
+      {
+        style = "bold";
+      }
+      if ((i % 5 === 0 && clock.showMinuteNumbersBig) ||
+          (i % 5 !== 0 && clock.showMinuteNumbersSmall) ||
+          handNumber)
+      {
+        drawNumber(clock, context2d, i, (2 * Math.PI) * (i / 60), clock.minuteNumbersRadius, clock.minuteNumbersFontSize, style);
+      }
+    }
   }
 
   function drawCircle(clock, context2d)
@@ -134,6 +238,19 @@ var Clock = (function()
     context2d.moveTo(0, Math.ceil(width));
     context2d.lineTo(0, -1 * Math.ceil(length));
     context2d.stroke();
+
+    if (clock.extendHands)
+    {
+      context2d.lineWidth = 1;
+      var oldDash = context2d.getLineDash();
+      context2d.setLineDash([2, 2]);
+      context2d.beginPath();
+      context2d.moveTo(0, -1 * Math.ceil(length));
+      context2d.lineTo(0, -1 * clock.radius);
+      context2d.stroke();
+      context2d.setLineDash(oldDash);
+    }
+    
     context2d.lineWidth = oldWidth;
     context2d.rotate(-1.0 * angle);
     context2d.strokeStyle = oldColour;
@@ -180,7 +297,7 @@ var Clock = (function()
       nextFrameTime += clock.refreshInterval;
     }
     var nextFrame = new Date(nextFrameTime);
-    setTimeout(
+    clock.drawTimerId = setTimeout(
         function()
         {
           clock.draw(context2d, nextFrame);
@@ -190,6 +307,11 @@ var Clock = (function()
 
   ClockDefinition.prototype.draw = function(context2d, frameTime)
   {
+    if (this.drawTimerId)
+    {
+      clearTimeout(this.drawTimerId);
+      this.drawTimerId = null;
+    }
     context2d.save();
     context2d.lineWidth = this.lineWidth;
     context2d.translate(this.centerX, this.centerY);
@@ -199,6 +321,7 @@ var Clock = (function()
                         2 * this.radius + 2 * this.lineWidth);
     drawCircle(this, context2d);
     drawTicks(this, context2d);
+    drawNumbers(this, context2d, frameTime);
     if (this.showHourHand)
     {
       drawHourHand(this, context2d, frameTime);
