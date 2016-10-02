@@ -95,9 +95,11 @@ var Clock = (function()
 
   ClockDefinition.prototype.hourNumbersRadius = 1.06;
   ClockDefinition.prototype.hourNumbersFontSize = 0.08;
+  ClockDefinition.prototype.hourNumbersColour = "black";
 
   ClockDefinition.prototype.minuteNumbersRadius = 0.85
   ClockDefinition.prototype.minuteNumbersFontSize = 0.05;
+  ClockDefinition.prototype.minuteNumbersColour = "black";
 
   ClockDefinition.prototype.setHandNumbers = function(extendHands, showHandNumbers)
   {
@@ -120,18 +122,18 @@ var Clock = (function()
 
   // Drawing
 
-  function drawNumber(clock, context2d, number, angle, relativeNumberRadius, relativeFontSize, style)
+  function drawNumber(clock, context2d, number, angle, relativeNumberRadius, relativeFontSize, fontStyle, colour)
   {
     var oldColour = context2d.strokeStyle;
-    context2d.strokeStyle = clock.rimColour;
+    context2d.fillStyle = colour;
     context2d.rotate(angle);
     context2d.translate(0, -1 * Math.ceil(relativeNumberRadius * clock.radius));
     context2d.rotate(-1 * angle);
     var fontSize = Math.ceil(relativeFontSize * clock.radius);
     var oldFont = context2d.font;
-    if (style)
+    if (fontStyle)
     {
-      context2d.font = style + " " + fontSize.toString() + "px sans-serif";
+      context2d.font = fontStyle + " " + fontSize.toString() + "px sans-serif";
     }
     else
     {
@@ -154,16 +156,23 @@ var Clock = (function()
   {
     for (var i = 1 ; i <= 12 ; ++i)
     {
+      // Is this number the one the hand is currently just passed
       var handNumber = (
               clock.showHandNumbers && 
               clock.showHourHand && 
               i === (frameTime.getHours() % 12));
+      // Is this number the one that the hand will reach next
+      var handNumberNext = (
+              clock.showHandNumbers && 
+              clock.showHourHand && 
+              i === ((frameTime.getHours() + 1) % 12));
       var style = null;
       if (handNumber)
       {
-        style = "bold";
+        // Bold the "current" reading number
+        style = "900";
       }
-      if (clock.showHourNumbers || handNumber)
+      if (clock.showHourNumbers || handNumber || handNumberNext)
       {
         drawNumber(clock, 
                    context2d, 
@@ -171,24 +180,35 @@ var Clock = (function()
                    (2 * Math.PI) * (i / 12), 
                    clock.hourNumbersRadius, 
                    clock.hourNumbersFontSize, 
-                   style);
+                   style,
+                   clock.hourNumbersColour);
       }
     }
 
     for (var i = 0 ; i < 60 ; ++i)
     {
-      var handNumber = (clock.showHandNumbers && clock.showMinuteHand && i == frameTime.getMinutes()) ||
-                       (clock.showHandNumbers && clock.showSecondHand && i == frameTime.getSeconds());
+      var handNumber = (clock.showHandNumbers && clock.showMinuteHand && i === frameTime.getMinutes()) ||
+                       (clock.showHandNumbers && clock.showSecondHand && i === frameTime.getSeconds());
+      var nextNumber = clock.showHandNumbers && 
+                       clock.showMinuteHand && 
+                       i === ((frameTime.getMinutes() + 1) % 60);
       var style = null;
       if (handNumber)
       {
-        style = "bold";
+        style = "900";
       }
       if ((i % 5 === 0 && clock.showMinuteNumbersBig) ||
           (i % 5 !== 0 && clock.showMinuteNumbersSmall) ||
-          handNumber)
+          handNumber || nextNumber)
       {
-        drawNumber(clock, context2d, i, (2 * Math.PI) * (i / 60), clock.minuteNumbersRadius, clock.minuteNumbersFontSize, style);
+        drawNumber(clock, 
+                   context2d, 
+                   i, 
+                   (2 * Math.PI) * (i / 60), 
+                   clock.minuteNumbersRadius, 
+                   clock.minuteNumbersFontSize, 
+                   style,
+                   clock.minuteNumbersColour);
       }
     }
   }
