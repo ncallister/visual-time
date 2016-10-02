@@ -2,25 +2,26 @@
 
 // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
 
-const DEFAULT_INCLUDE_DIGITAL = false;
-const DEFAULT_REFRESH_INTERVAL = 1000;  // 1 second
-const DEFAULT_AUTO_DRAW = true;
+var DEFAULT_INCLUDE_DIGITAL = false;
+var DEFAULT_REFRESH_INTERVAL = 1000;  // 1 second
+var DEFAULT_AUTO_DRAW = true;
 
-const MS_IN_S = 1000.0;
-const S_IN_M = 60.0;
-const M_IN_H = 60.0;
-const H_IN_D = 24;
-const MS_IN_M = MS_IN_S * S_IN_M;
-const MS_IN_H = MS_IN_M * M_IN_H;
-const MS_IN_D = MS_IN_H * H_IN_D;
+var MS_IN_S = 1000.0;
+var S_IN_M = 60.0;
+var M_IN_H = 60.0;
+var H_IN_D = 24;
+var MS_IN_M = MS_IN_S * S_IN_M;
+var MS_IN_H = MS_IN_M * M_IN_H;
+var MS_IN_D = MS_IN_H * H_IN_D;
 
 var Clock = (function()
 {
   function ClockDefinition(centerX,
                             centerY,
                             radius,
-                            includeDigital = DEFAULT_INCLUDE_DIGITAL)
+                            includeDigital)
   {
+    includeDigital = includeDigital || DEFAULT_INCLUDE_DIGITAL;
     this.centerX = centerX;
     this.centerY = centerY;
     this.radius = radius;
@@ -153,7 +154,10 @@ var Clock = (function()
   {
     for (var i = 1 ; i <= 12 ; ++i)
     {
-      var handNumber = (clock.showHandNumbers && clock.showHourHand && i === frameTime.getHours() % 12);
+      var handNumber = (
+              clock.showHandNumbers && 
+              clock.showHourHand && 
+              i === (frameTime.getHours() % 12));
       var style = null;
       if (handNumber)
       {
@@ -161,7 +165,13 @@ var Clock = (function()
       }
       if (clock.showHourNumbers || handNumber)
       {
-        drawNumber(clock, context2d, i, (2 * Math.PI) * (i / 12), clock.hourNumbersRadius, clock.hourNumbersFontSize, style);
+        drawNumber(clock, 
+                   context2d, 
+                   i, 
+                   (2 * Math.PI) * (i / 12), 
+                   clock.hourNumbersRadius, 
+                   clock.hourNumbersFontSize, 
+                   style);
       }
     }
 
@@ -315,10 +325,11 @@ var Clock = (function()
     context2d.save();
     context2d.lineWidth = this.lineWidth;
     context2d.translate(this.centerX, this.centerY);
-    context2d.clearRect(-1 * this.radius - this.lineWidth,
-                        -1 * this.radius - this.lineWidth,
-                        2 * this.radius + 2 * this.lineWidth,
-                        2 * this.radius + 2 * this.lineWidth);
+    var buffer = this.radius * 0.5;
+    context2d.clearRect(-1 * this.radius - buffer,
+                        -1 * this.radius - buffer,
+                        2 * this.radius + 2 * buffer,
+                        2 * this.radius + 2 * buffer);
     drawCircle(this, context2d);
     drawTicks(this, context2d);
     drawNumbers(this, context2d, frameTime);
