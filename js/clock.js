@@ -2,7 +2,6 @@
 
 // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
 
-var DEFAULT_INCLUDE_DIGITAL = false;
 var DEFAULT_REFRESH_INTERVAL = 1000;  // 1 second
 var DEFAULT_AUTO_DRAW = true;
 
@@ -18,14 +17,11 @@ var Clock = (function()
 {
   function ClockDefinition(centerX,
                             centerY,
-                            radius,
-                            includeDigital)
+                            radius)
   {
-    includeDigital = includeDigital || DEFAULT_INCLUDE_DIGITAL;
     this.centerX = centerX;
     this.centerY = centerY;
     this.radius = radius;
-    this.includeDigital = includeDigital;
   };
 
   ClockDefinition.prototype.refreshInterval = DEFAULT_REFRESH_INTERVAL;
@@ -118,9 +114,33 @@ var Clock = (function()
     this.showMinuteNumbersSmall = minutesSmall;
   }
 
-
+  
+  ClockDefinition.prototype.showDigital = false;
+  ClockDefinition.prototype.digitalCenterX = 0;
+  ClockDefinition.prototype.digitalCenterY = 0.3;
+  ClockDefinition.prototype.digitalHeight = 0.1;
 
   // Drawing
+  function drawDigital(clock, context2d)
+  {
+    context2d.translate(clock.digitalCenterX, clock.digitalCenterY);
+    var oldFont = context2d.font;
+    context2d.font = Math.ceil(clock.digitalHeight.toString() * clock.radius).toString() +
+            "px sans-serif";
+    
+    var separatorMetrics = context2d.measureText(":");
+    var hours = "";
+    var minutes = "";
+    var seconds = "";
+    if (clock.showHourHand)
+    {
+      // hours = 
+      // TODO
+    }
+    
+    context2d.font = oldFont;
+    context2d.translate(-1 * clock.digitalCenterX, -1 * clock.digitalCenterY);
+  }
 
   function drawNumber(clock, context2d, number, angle, relativeNumberRadius, relativeFontSize, fontStyle, colour)
   {
