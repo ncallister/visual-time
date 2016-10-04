@@ -1,0 +1,14 @@
+<html>
+  <head>
+    <title>Visual Time</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="text/javascript" src="js/clock.js"></script>
+    <script type="text/javascript" src="js/settings.js"></script>
+  </head>
+  <body onload="window.mainClock = startClock('clock-canvas');">
+    <canvas id="clock-canvas" width="500" height="500"></canvas>
+    <input type="checkbox" id="showHourHand" checked onchange="updateSettings();">Show Hours
+    <input type="checkbox" id="showMinuteHand" checked onchange="updateSettings();">Show Minutes
+    <input type="checkbox" id="showSecondHand" checked onchange="updateSettings();">Show Seconds
+  </body>
+</html>
