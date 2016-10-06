@@ -56,9 +56,16 @@ var ClockHand = (function()
     }
     
     var oldColour = context2d.strokeStyle;
-    if (this.colour)
+    try
     {
-      context2d.strokeStyle = this.colour;
+      if (this.colour)
+      {
+        context2d.strokeStyle = this.colour;
+      }
+    }
+    catch (e)
+    {
+      console.log(e.toString());
     }
     context2d.rotate(angle);
     var oldWidth = context2d.lineWidth;
@@ -68,6 +75,7 @@ var ClockHand = (function()
     context2d.lineTo(0, -1 * Math.ceil(clock.radius * this.length));
     context2d.stroke();
 
+    // TODO: Move to ClockHand.prototype.extend
     if (clock.extendHands)
     {
       context2d.lineWidth = 1;
@@ -83,6 +91,37 @@ var ClockHand = (function()
     context2d.lineWidth = oldWidth;
     context2d.rotate(-1.0 * angle);
     context2d.strokeStyle = oldColour;
+  }
+  
+  ClockHand.prototype.timerAlpha = 0.4;
+  
+  ClockHand.prototype.drawTimerArc = function(clock, context2d, currentAngle, endAngle)
+  {
+    if (endAngle < currentAngle)
+    {
+      endAngle += 2 * Math.PI;
+    }
+    
+    var oldFillStyle = context2d.fillStyle;
+    if (this.colour)
+    {
+      context2d.fillStyle = this.colour;
+    }
+    var oldAlpha = context2d.globalAlpha;
+    context2d.globalAlpha = this.timerAlpha;
+    context2d.rotate(currentAngle);
+    
+    context2d.beginPath();
+    context2d.moveTo(0, 0);
+    context2d.lineTo(0, -1 * Math.ceil(this.length * clock.radius));
+    context2d.rotate(-0.5 * Math.PI);
+    context2d.arc(0, 0, Math.ceil(this.length * clock.radius), 0, endAngle - currentAngle);
+    context2d.rotate(0.5 * Math.PI);
+    context2d.fill();
+    
+    context2d.rotate(-1 * currentAngle);
+    context2d.globalAlpha = oldAlpha;
+    context2d.fillStyle = oldFillStyle;
   }
   
   // Return the constructor for this type.
@@ -221,7 +260,7 @@ var DigitalClock = (function()
 var Clock = (function()
 {
   // Clock Constructor
-  function ClockDefinition(centerX,
+  function AnalogClock(centerX,
                             centerY,
                             radius)
   {
@@ -232,25 +271,25 @@ var Clock = (function()
     this.digitalClock = new DigitalClock(0, 0.5 * this.radius, 0.1 * this.radius);
   };
 
-  ClockDefinition.prototype.refreshInterval = DEFAULT_REFRESH_INTERVAL;
-  ClockDefinition.prototype.autoDraw = DEFAULT_AUTO_DRAW;
+  AnalogClock.prototype.refreshInterval = DEFAULT_REFRESH_INTERVAL;
+  AnalogClock.prototype.autoDraw = DEFAULT_AUTO_DRAW;
 
-  ClockDefinition.prototype.setDrawBehaviour = function(refreshInterval, autoDraw)
+  AnalogClock.prototype.setDrawBehaviour = function(refreshInterval, autoDraw)
   {
     this.refreshInterval = refreshInterval;
     this.autoDraw = autoDraw;
   }
 
-  ClockDefinition.prototype.bigTickSize = 0.07;
-  ClockDefinition.prototype.smallTickSize = 0.02;
+  AnalogClock.prototype.bigTickSize = 0.07;
+  AnalogClock.prototype.smallTickSize = 0.02;
   
-  ClockDefinition.prototype.hourHand = new ClockHand(0.4, 0.025, "black");
-  ClockDefinition.prototype.minuteHand = new ClockHand(0.8, 0.02, "black");
-  ClockDefinition.prototype.secondHand = new ClockHand(0.7, 0.005, "maroon");
+  AnalogClock.prototype.hourHand = new ClockHand(0.4, 0.025, "black");
+  AnalogClock.prototype.minuteHand = new ClockHand(0.8, 0.02, "black");
+  AnalogClock.prototype.secondHand = new ClockHand(0.7, 0.005, "maroon");
 
-  ClockDefinition.prototype.lineWidth = 2;
+  AnalogClock.prototype.lineWidth = 2;
 
-  ClockDefinition.prototype.setShowHands = function(hourHand, minuteHand, secondHand)
+  AnalogClock.prototype.setShowHands = function(hourHand, minuteHand, secondHand)
   {
     this.hourHand.show = hourHand;
     this.minuteHand.show = minuteHand;
@@ -258,10 +297,10 @@ var Clock = (function()
     this.digitalClock.showSeconds = secondHand;
   }
 
-  ClockDefinition.prototype.faceColour = "skyblue";
-  ClockDefinition.prototype.rimColour = "black";
+  AnalogClock.prototype.faceColour = "skyblue";
+  AnalogClock.prototype.rimColour = "black";
 
-  ClockDefinition.prototype.setColourPallete = function(face, rim, hourHand, minuteHand, secondHand)
+  AnalogClock.prototype.setColourPallete = function(face, rim, hourHand, minuteHand, secondHand)
   {
     if (face)
     {
@@ -285,36 +324,59 @@ var Clock = (function()
     }
   }
   
-  ClockDefinition.prototype.extendHands = true;
-  ClockDefinition.prototype.showHandNumbers = true;
+  AnalogClock.prototype.extendHands = true;
+  AnalogClock.prototype.showHandNumbers = true;
 
-  ClockDefinition.prototype.hourNumbersRadius = 1.06;
-  ClockDefinition.prototype.hourNumbersFontSize = 0.08;
-  ClockDefinition.prototype.hourNumbersColour = "black";
+  AnalogClock.prototype.hourNumbersRadius = 1.06;
+  AnalogClock.prototype.hourNumbersFontSize = 0.08;
+  AnalogClock.prototype.hourNumbersColour = "black";
 
-  ClockDefinition.prototype.minuteNumbersRadius = 0.85
-  ClockDefinition.prototype.minuteNumbersFontSize = 0.05;
-  ClockDefinition.prototype.minuteNumbersColour = "black";
+  AnalogClock.prototype.minuteNumbersRadius = 0.85
+  AnalogClock.prototype.minuteNumbersFontSize = 0.05;
+  AnalogClock.prototype.minuteNumbersColour = "black";
 
-  ClockDefinition.prototype.setHandNumbers = function(extendHands, showHandNumbers)
+  AnalogClock.prototype.setHandNumbers = function(extendHands, showHandNumbers)
   {
     this.extendHands = extendHands;
     this.showHandNumbers = showHandNumbers;
   }
 
-  ClockDefinition.prototype.showHourNumbers = true;
-  ClockDefinition.prototype.showMinuteNumbersBig = true;
-  ClockDefinition.prototype.showMinuteNumbersSmall = false;
+  AnalogClock.prototype.showHourNumbers = true;
+  AnalogClock.prototype.showMinuteNumbersBig = true;
+  AnalogClock.prototype.showMinuteNumbersSmall = false;
 
-  ClockDefinition.prototype.setShowNumbers = function(hours, minutesBig, minutesSmall)
+  AnalogClock.prototype.setShowNumbers = function(hours, minutesBig, minutesSmall)
   {
     this.showHourNumbers = hours;
     this.showMinuteNumbersBig = minutesBig;
     this.showMinuteNumbersSmall = minutesSmall;
   }
-
   
-  ClockDefinition.prototype.showDigital = true;
+  AnalogClock.prototype.showDigital = true;
+  
+  AnalogClock.prototype.timerEnd = null;
+  
+  AnalogClock.prototype.setTimerEnd = function(hour, minute, second)
+  {
+    minute = minute || 0;
+    second = second || 0;
+    
+    this.timerEnd = new Date();
+    this.timerEnd.setHours(hour);
+    this.timerEnd.setMinutes(minute);
+    this.timerEnd.setSeconds(second);
+  }
+  
+  AnalogClock.prototype.setTimerDuration = function(hours, minutes, seconds)
+  {
+    minutes = minutes || 0;
+    seconds = seconds || 0;
+    
+    this.timerEnd = new Date();
+    this.timerEnd.setHours(this.timerEnd.getHours() + hours);
+    this.timerEnd.setMinutes(this.timerEnd.getMinutes() + minutes);
+    this.timerEnd.setSeconds(this.timerEnd.getSeconds() + seconds);
+  }
 
   // Drawing
   function drawNumber(clock, context2d, number, angle, relativeNumberRadius, relativeFontSize, fontStyle, colour)
@@ -448,22 +510,64 @@ var Clock = (function()
       drawTick(clock, context2d, i * ((2.0 * Math.PI) / totalTicks), clock.radius * tickSize);
     }
   }
+  
+  function getHourHandAngle(frameTime)
+  {
+    var millisThisDay = 
+        frameTime.getHours() * MS_IN_H + 
+        frameTime.getMinutes() * MS_IN_M + 
+        frameTime.getSeconds() * MS_IN_S;
+    return (2.0 * Math.PI) * (millisThisDay / MS_IN_D) * 2.0;
+  }
 
   function drawHourHand(clock, context2d, frameTime)
   {
-    var millisThisDay = frameTime.getHours() * MS_IN_H + frameTime.getMinutes() * MS_IN_M + frameTime.getSeconds() * MS_IN_S;
-    clock.hourHand.draw(clock, context2d, (2.0 * Math.PI) * (millisThisDay / MS_IN_D) * 2.0);
+    var handAngle = getHourHandAngle(frameTime);
+    clock.hourHand.draw(clock, context2d, handAngle);
+    
+    if (clock.timerEnd && 
+        clock.timerEnd.getTime() > frameTime.getTime() &&
+        clock.timerEnd.getTime() - frameTime.getTime() < MS_IN_D)
+    {
+      clock.hourHand.drawTimerArc(clock, context2d, handAngle, getHourHandAngle(clock.timerEnd));
+    }
+  }
+  
+  function getMinuteHandAngle(frameTime)
+  {
+    var millisThisHour = frameTime.getMinutes() * MS_IN_M + frameTime.getSeconds() * MS_IN_S;
+    return (2.0 * Math.PI) * (millisThisHour / MS_IN_H);
   }
 
   function drawMinuteHand(clock, context2d, frameTime)
   {
-    var millisThisHour = frameTime.getMinutes() * MS_IN_M + frameTime.getSeconds() * MS_IN_S;
-    clock.minuteHand.draw(clock, context2d, (2.0 * Math.PI) * (millisThisHour / MS_IN_H));
+    var handAngle = getMinuteHandAngle(frameTime);
+    clock.minuteHand.draw(clock, context2d, handAngle);
+    
+    if (clock.timerEnd && 
+        clock.timerEnd.getTime() > frameTime.getTime() &&
+        clock.timerEnd.getTime() - frameTime.getTime() < MS_IN_H)
+    {
+      clock.minuteHand.drawTimerArc(clock, context2d, handAngle, getMinuteHandAngle(clock.timerEnd));
+    }
+  }
+  
+  function getSecondHandAngle(frameTime)
+  {
+    return (2.0 * Math.PI) * (frameTime.getSeconds() / S_IN_M);
   }
 
   function drawSecondHand(clock, context2d, frameTime)
   {
-    clock.secondHand.draw(clock, context2d, (2.0 * Math.PI) * (frameTime.getSeconds() / S_IN_M));
+    var handAngle = getSecondHandAngle(frameTime);
+    clock.secondHand.draw(clock, context2d, handAngle);
+    
+    if (clock.timerEnd && 
+        clock.timerEnd.getTime() > frameTime.getTime() &&
+        clock.timerEnd.getTime() - frameTime.getTime() < MS_IN_M)
+    {
+      clock.secondHand.drawTimerArc(clock, context2d, handAngle, getSecondHandAngle(clock.timerEnd));
+    }
   }
 
   function rescheduleDraw(clock, context2d, frameTime)
@@ -483,13 +587,19 @@ var Clock = (function()
         nextFrame.getTime() - now.getTime());
   }
 
-  ClockDefinition.prototype.draw = function(context2d, frameTime)
+  AnalogClock.prototype.draw = function(context2d, frameTime)
   {
     if (this.drawTimerId)
     {
       clearTimeout(this.drawTimerId);
       this.drawTimerId = null;
     }
+    
+    if (this.timerEnd && frameTime.getTime() >= this.timerEnd.getTime())
+    {
+      this.timerEnd = null;
+    }
+    
     context2d.save();
     context2d.lineWidth = this.lineWidth;
     context2d.translate(this.centerX, this.centerY);
@@ -527,7 +637,7 @@ var Clock = (function()
     }
   }
 
-  return ClockDefinition;
+  return AnalogClock;
 })();
 
 function startClock(canvasId)
