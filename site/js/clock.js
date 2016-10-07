@@ -283,8 +283,8 @@ var Clock = (function()
   AnalogClock.prototype.bigTickSize = 0.07;
   AnalogClock.prototype.smallTickSize = 0.02;
   
-  AnalogClock.prototype.hourHand = new ClockHand(0.4, 0.025, "black");
-  AnalogClock.prototype.minuteHand = new ClockHand(0.8, 0.02, "black");
+  AnalogClock.prototype.hourHand = new ClockHand(0.4, 0.025, "darkblue");
+  AnalogClock.prototype.minuteHand = new ClockHand(0.8, 0.02, "darkgreen");
   AnalogClock.prototype.secondHand = new ClockHand(0.7, 0.005, "maroon");
 
   AnalogClock.prototype.lineWidth = 2;
