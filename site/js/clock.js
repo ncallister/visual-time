@@ -162,6 +162,45 @@ var DigitalClock = (function()
     }
     return string;
   }
+  
+  DigitalClock.prototype.timeToString = function(frameTime)
+  {
+    var timeString = "";
+    
+    var hoursVal = frameTime.getHours();
+    if (this.ampm)
+    {
+      hoursVal %= 12;
+      if (hoursVal === 0)
+      {
+        hoursVal = 12;
+      }
+    }
+    timeString += padField(hoursVal);
+    
+    timeString += this.divider;
+    timeString += padField(frameTime.getMinutes());
+    
+    if (this.showSeconds)
+    {
+      timeString += this.divider;
+      timeString += padField(frameTime.getSeconds());
+    }
+    
+    if (this.ampm)
+    {
+      if (frameTime.getHours() < 12)
+      {
+        timeString += " AM";
+      }
+      else
+      {
+        timeString += " PM";
+      }
+    }
+    
+    return timeString;
+  }
 
   // Drawing
   DigitalClock.prototype.draw = function(context2d, frameTime)
@@ -649,7 +688,9 @@ function startClock(canvasId)
     var clock = new Clock(canvas.width / 2,
                      canvas.height / 2,
                      Math.min(canvas.width, canvas.height) * 0.45);
-    clock.draw(ctx, new Date());
+    var frameTime = new Date();
+    frameTime.setMilliseconds(0);
+    clock.draw(ctx, frameTime);
     return clock;
   }
   throw new Error("Could not render to specified element");
