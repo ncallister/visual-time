@@ -13,6 +13,35 @@ var MS_IN_M = MS_IN_S * S_IN_M;
 var MS_IN_H = MS_IN_M * M_IN_H;
 var MS_IN_D = MS_IN_H * H_IN_D;
 
+
+if (!CanvasRenderingContext2D.prototype.pathRoundRect)
+{
+  CanvasRenderingContext2D.prototype.pathRoundRect = function(x, y, width, height, radius)
+  {
+    if (width < radius * 2)
+    {
+      throw new Error("Cannot render round rect with width: " + width + " radius: " + radius + " too narrow");
+    }
+    
+    if (height < radius * 2)
+    {
+      throw new Error("Cannot render round rect with height: " + height + " radius: " + radius + " too short");
+    }
+    
+    this.moveTo(x + radius, y);
+    this.lineTo(x + width - radius, y)
+    this.arc(x + width - radius, y + radius, radius, 1.5 * Math.PI, 2 * Math.PI);
+    this.lineTo(x + width, y + height - radius);
+    this.arc(x + width - radius, y + height - radius, radius, 0, 0.5 * Math.PI);
+    this.lineTo(x + radius, y + height);
+    this.arc(x + radius, y + height - radius, radius, 0.5 * Math.PI, Math.PI);
+    this.lineTo(x, y + radius);
+    this.arc(x + radius, y + radius, radius, Math.PI, 1.5 * Math.PI);
+  }
+}
+
+
+
 var ClockHand = (function()
 {
   /**
@@ -55,12 +84,14 @@ var ClockHand = (function()
       return;
     }
     
-    var oldColour = context2d.strokeStyle;
+    var oldStroke = context2d.strokeStyle;
+    var oldFill = context2d.fillStyle;
     try
     {
       if (this.colour)
       {
         context2d.strokeStyle = this.colour;
+        context2d.fillStyle = this.colour;
       }
     }
     catch (e)
@@ -68,19 +99,26 @@ var ClockHand = (function()
       console.log(e.toString());
     }
     context2d.rotate(angle);
-    var oldWidth = context2d.lineWidth;
-    context2d.lineWidth = Math.ceil(clock.radius * this.width);
+    
+    var scaledWidth = Math.ceil(clock.radius * this.width);
+    var scaledLength = Math.ceil(clock.radius * this.length);
+    
     context2d.beginPath();
-    context2d.moveTo(0, Math.ceil(clock.radius * this.width));
-    context2d.lineTo(0, -1 * Math.ceil(clock.radius * this.length));
-    context2d.stroke();
+    
+    context2d.pathRoundRect(-1 * scaledWidth / 2, 
+        -1 * scaledLength,
+        scaledWidth,
+        scaledLength + (scaledWidth / 2),
+        scaledWidth / 3);
+    
+    context2d.fill();
 
     // TODO: Move to ClockHand.prototype.extend
     if (clock.extendHands)
     {
       context2d.lineWidth = 1;
       var oldDash = context2d.getLineDash();
-      context2d.setLineDash([2, 2]);
+      context2d.setLineDash([2, 5]);
       context2d.beginPath();
       context2d.moveTo(0, -1 * Math.ceil(clock.radius * this.length));
       context2d.lineTo(0, -1 * clock.radius);
@@ -88,9 +126,9 @@ var ClockHand = (function()
       context2d.setLineDash(oldDash);
     }
     
-    context2d.lineWidth = oldWidth;
     context2d.rotate(-1.0 * angle);
-    context2d.strokeStyle = oldColour;
+    context2d.strokeStyle = oldStroke;
+    context2d.fillStyle = oldFill;
   }
   
   ClockHand.prototype.timerAlpha = 0.4;
@@ -120,6 +158,9 @@ var ClockHand = (function()
     context2d.fill();
     
     context2d.rotate(-1 * currentAngle);
+    
+    this.draw(clock, context2d, endAngle);
+    
     context2d.globalAlpha = oldAlpha;
     context2d.fillStyle = oldFillStyle;
   }
@@ -128,6 +169,13 @@ var ClockHand = (function()
   return ClockHand;
 })();
 
+
+
+/**
+ * Digital Clock
+ * 
+ * @type DigitalClock
+ */
 var DigitalClock = (function()
 {
   function DigitalClock(centerX, centerY, height)
@@ -152,6 +200,18 @@ var DigitalClock = (function()
   DigitalClock.prototype.ampmColour = null;
   
   DigitalClock.prototype.showSeconds = true;
+  
+  DigitalClock.prototype.backgroundColour = "white";
+  DigitalClock.prototype.backgroundAlpha = 0.2;
+  DigitalClock.prototype.backgroundPadding =
+  {
+    top: 0.5,     // Factor of font height
+    bottom: 0.5,  // Factor of font height
+    left: 1,      // Em
+    right: 1      // Em
+  };
+  DigitalClock.prototype.backgroundHeight = 1.2;
+  DigitalClock.prototype.backgroundWidth = 1.2;   // em
   
   function padField(value)
   {
@@ -248,6 +308,8 @@ var DigitalClock = (function()
     var secondsMetrics = context2d.measureText(seconds);
     var ampmMetrics = context2d.measureText(ampm);
     
+    var emMetrics = context2d.measureText("m");
+    
     var dividerCount = 1;
     if (this.showSeconds)
     {
@@ -260,6 +322,31 @@ var DigitalClock = (function()
                      secondsMetrics.width +
                      ampmMetrics.width;
     var xLeft = -1 * (totalWidth / 2);
+    
+    var bgPaddingScaled =
+    {
+      top: this.backgroundPadding.top * this.height,
+      bottom: this.backgroundPadding.bottom * this.height,
+      left: this.backgroundPadding.left * emMetrics.width,
+      right: this.backgroundPadding.right * emMetrics.width
+    }
+    
+    context2d.clearRect(0 - (totalWidth / 2) - bgPaddingScaled.left,
+                            0 - (this.height / 2) - bgPaddingScaled.top,
+                            totalWidth + bgPaddingScaled.left + bgPaddingScaled.right,
+                            this.height + bgPaddingScaled.top + bgPaddingScaled.bottom);
+    
+    context2d.fillStyle = (this.backgroundColour)?this.backgroundColour:oldFillStyle;
+    var oldAlpha = context2d.globalAlpha;
+    context2d.globalAlpha = this.backgroundAlpha;
+    context2d.beginPath();
+    context2d.pathRoundRect(0 - (totalWidth / 2) - bgPaddingScaled.left,
+                            0 - (this.height / 2) - bgPaddingScaled.top,
+                            totalWidth + bgPaddingScaled.left + bgPaddingScaled.right,
+                            this.height + bgPaddingScaled.top + bgPaddingScaled.bottom,
+                            Math.min(bgPaddingScaled.top, bgPaddingScaled.bottom));
+    context2d.fill();
+    context2d.globalAlpha = oldAlpha;
                  
     context2d.fillStyle = (this.hoursColour)?this.hoursColour:oldFillStyle;
     context2d.fillText(hours, xLeft, 0);
@@ -322,11 +409,11 @@ var Clock = (function()
   AnalogClock.prototype.bigTickSize = 0.07;
   AnalogClock.prototype.smallTickSize = 0.02;
   
-  AnalogClock.prototype.hourHand = new ClockHand(0.4, 0.025, "darkblue");
+  AnalogClock.prototype.hourHand = new ClockHand(0.4, 0.04, "darkblue");
   AnalogClock.prototype.minuteHand = new ClockHand(0.8, 0.02, "darkgreen");
-  AnalogClock.prototype.secondHand = new ClockHand(0.7, 0.005, "maroon");
+  AnalogClock.prototype.secondHand = new ClockHand(0.7, 0.01, "maroon");
 
-  AnalogClock.prototype.lineWidth = 2;
+  AnalogClock.prototype.lineWidth = 3;
 
   AnalogClock.prototype.setShowHands = function(hourHand, minuteHand, secondHand)
   {
@@ -609,7 +696,7 @@ var Clock = (function()
     }
   }
 
-  function rescheduleDraw(clock, context2d, frameTime)
+  function rescheduleDraw(clock, faceContext, handsContext, digitalContext, frameTime)
   {
     var now = new Date();
     var nextFrameTime = frameTime.getTime() + clock.refreshInterval;
@@ -621,12 +708,12 @@ var Clock = (function()
     clock.drawTimerId = setTimeout(
         function()
         {
-          clock.draw(context2d, nextFrame);
+          clock.draw(faceContext, handsContext, digitalContext, nextFrame);
         },
         nextFrame.getTime() - now.getTime());
   }
 
-  AnalogClock.prototype.draw = function(context2d, frameTime)
+  AnalogClock.prototype.draw = function(faceContext, handsContext, digitalContext, frameTime)
   {
     if (this.drawTimerId)
     {
@@ -638,60 +725,81 @@ var Clock = (function()
     {
       this.timerEnd = null;
     }
-    
-    context2d.save();
-    context2d.lineWidth = this.lineWidth;
-    context2d.translate(this.centerX, this.centerY);
     var buffer = this.radius * 0.5;
-    context2d.clearRect(-1 * this.radius - buffer,
-                        -1 * this.radius - buffer,
-                        2 * this.radius + 2 * buffer,
-                        2 * this.radius + 2 * buffer);
-    drawCircle(this, context2d);
-    drawTicks(this, context2d);
-    drawNumbers(this, context2d, frameTime);
+    
+    if (!this.faceValid)
+    {
+      faceContext.save();
+      faceContext.lineWidth = this.lineWidth;
+      faceContext.translate(this.centerX, this.centerY);
+      faceContext.clearRect(-1 * this.radius - buffer,
+                          -1 * this.radius - buffer,
+                          2 * this.radius + 2 * buffer,
+                          2 * this.radius + 2 * buffer);
+      drawCircle(this, faceContext);
+      drawTicks(this, faceContext);
+      faceContext.restore();
+      
+      this.faceValid = true;
+    }
+    
+    handsContext.save();
+    handsContext.lineWidth = this.lineWidth;
+    handsContext.translate(this.centerX, this.centerY);
+    handsContext.clearRect(-1 * this.radius - buffer,
+                          -1 * this.radius - buffer,
+                          2 * this.radius + 2 * buffer,
+                          2 * this.radius + 2 * buffer);
+    drawNumbers(this, handsContext, frameTime);
     if (this.hourHand.show)
     {
-      drawHourHand(this, context2d, frameTime);
+      drawHourHand(this, handsContext, frameTime);
     }
     if (this.minuteHand.show)
     {
-      drawMinuteHand(this, context2d, frameTime);
+      drawMinuteHand(this, handsContext, frameTime);
     }
     if (this.secondHand.show)
     {
-      drawSecondHand(this, context2d, frameTime);
+      drawSecondHand(this, handsContext, frameTime);
     }
+    handsContext.restore();
     
     if (this.showDigital)
     {
-      this.digitalClock.draw(context2d, frameTime);
+      digitalContext.save();
+      digitalContext.translate(this.centerX, this.centerY);
+      this.digitalClock.draw(digitalContext, frameTime);
+      digitalContext.restore();
     }
     
     
-    context2d.restore();
     if (this.autoDraw)
     {
-      rescheduleDraw(this, context2d, frameTime);
+      rescheduleDraw(this, faceContext, handsContext, digitalContext, frameTime);
     }
   }
 
   return AnalogClock;
 })();
 
-function startClock(canvasId)
+function startClock(faceCanvasId, handsCanvasId, digitalCanvasId)
 {
-  var canvas = document.getElementById(canvasId);
-  if (canvas.getContext)
-  {
-    var ctx = canvas.getContext('2d');
-    var clock = new Clock(canvas.width / 2,
-                     canvas.height / 2,
-                     Math.min(canvas.width, canvas.height) * 0.45);
-    var frameTime = new Date();
-    frameTime.setMilliseconds(0);
-    clock.draw(ctx, frameTime);
-    return clock;
-  }
-  throw new Error("Could not render to specified element");
+  var faceCanvas = document.getElementById(faceCanvasId);
+  var handsCanvas = document.getElementById(handsCanvasId);
+  var digitalCanvas = document.getElementById(digitalCanvasId);
+  
+  var faceContext = faceCanvas.getContext('2d');
+  var handsContext = handsCanvas.getContext('2d');
+  var digitalContext = digitalCanvas.getContext('2d');
+  
+  var clock = new Clock(faceCanvas.width / 2,
+                   faceCanvas.height / 2,
+                   Math.min(faceCanvas.width, faceCanvas.height) * 0.45);
+  var frameTime = new Date();
+  frameTime.setMilliseconds(0);
+  
+  clock.draw(faceContext, handsContext, digitalContext, frameTime);
+    
+  return clock;
 }

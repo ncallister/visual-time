@@ -6,8 +6,12 @@
     <script type="text/javascript" src="js/settings.js"></script>
     <script type="text/javascript" src="js/title.js"></script>
   </head>
-  <body onload="window.mainClock = startClock('clock-canvas');">
-    <canvas id="clock-canvas" width="500" height="500"></canvas>
+  <body onload="window.mainClock = startClock('faceCanvas', 'handsCanvas', 'digitalCanvas');">
+    <div class="canvasContainer">
+        <canvas id="faceCanvas" class="faceCanvas" width="500" height="500"></canvas>
+        <canvas id="handsCanvas" class="handsCanvas" width="500" height="500"></canvas>
+        <canvas id="digitalCanvas" class="digitalCanvas" width="500" height="500"></canvas>
+    </div>
     <table class="timer">
         <tr>
             <td>

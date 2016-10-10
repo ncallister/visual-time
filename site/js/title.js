@@ -17,8 +17,6 @@ function setTitle()
   // Get the current time
   var time = new Date();
   
-  console.log(time.toString());
-  
   if (titleTimer)
   {
     clearTimeout(titleTimer);

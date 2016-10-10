@@ -1,8 +1,36 @@
-canvas 
-{ 
+.canvasContainer
+{
   border: 0px solid black; 
   display: block;
   margin: 0 auto;
+  position: relative;
+  width: 500px;
+  height: 500px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.canvasContainer > canvas
+{
+  border: 0px solid black; 
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.faceCanvas
+{
+    z-index: 1;
+}
+
+.handsCanvas
+{
+    z-index: 2;
+}
+
+.digitalCanvas
+{
+    z-index: 3;
 }
 
 .settings
