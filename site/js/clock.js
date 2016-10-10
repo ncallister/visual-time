@@ -202,7 +202,7 @@ var DigitalClock = (function()
   DigitalClock.prototype.showSeconds = true;
   
   DigitalClock.prototype.backgroundColour = "white";
-  DigitalClock.prototype.backgroundAlpha = 0.2;
+  DigitalClock.prototype.backgroundAlpha = 0.3;
   DigitalClock.prototype.backgroundPadding =
   {
     top: 0.5,     // Factor of font height
@@ -397,6 +397,9 @@ var Clock = (function()
     this.radius = radius;
     
     this.digitalClock = new DigitalClock(centerX, centerY + 0.5 * this.radius, 0.1 * this.radius);
+    this.digitalClock.hoursColour = this.hourHand.colour;
+    this.digitalClock.minutesColour = this.minuteHand.colour;
+    this.digitalClock.secondsColour = this.secondHand.colour;
   };
 
   AnalogClock.prototype.refreshInterval = DEFAULT_REFRESH_INTERVAL;
