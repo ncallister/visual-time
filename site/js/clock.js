@@ -265,6 +265,8 @@ var DigitalClock = (function()
   // Drawing
   DigitalClock.prototype.draw = function(context2d, frameTime)
   {
+    context2d.clearRect(0, 0, context2d.width, context2d.height);
+    
     context2d.translate(this.centerX, this.centerY);
     var oldFont = context2d.font;
     context2d.font = Math.ceil(this.height.toString()).toString() +
@@ -394,7 +396,7 @@ var Clock = (function()
     this.centerY = centerY;
     this.radius = radius;
     
-    this.digitalClock = new DigitalClock(0, 0.5 * this.radius, 0.1 * this.radius);
+    this.digitalClock = new DigitalClock(centerX, centerY + 0.5 * this.radius, 0.1 * this.radius);
   };
 
   AnalogClock.prototype.refreshInterval = DEFAULT_REFRESH_INTERVAL;
@@ -732,10 +734,7 @@ var Clock = (function()
       faceContext.save();
       faceContext.lineWidth = this.lineWidth;
       faceContext.translate(this.centerX, this.centerY);
-      faceContext.clearRect(-1 * this.radius - buffer,
-                          -1 * this.radius - buffer,
-                          2 * this.radius + 2 * buffer,
-                          2 * this.radius + 2 * buffer);
+      faceContext.clearRect(0, 0, faceContext.width, faceContext.height);
       drawCircle(this, faceContext);
       drawTicks(this, faceContext);
       faceContext.restore();
@@ -745,11 +744,8 @@ var Clock = (function()
     
     handsContext.save();
     handsContext.lineWidth = this.lineWidth;
+    handsContext.clearRect(0, 0, handsContext.width, handsContext.height);
     handsContext.translate(this.centerX, this.centerY);
-    handsContext.clearRect(-1 * this.radius - buffer,
-                          -1 * this.radius - buffer,
-                          2 * this.radius + 2 * buffer,
-                          2 * this.radius + 2 * buffer);
     drawNumbers(this, handsContext, frameTime);
     if (this.hourHand.show)
     {
@@ -768,7 +764,6 @@ var Clock = (function()
     if (this.showDigital)
     {
       digitalContext.save();
-      digitalContext.translate(this.centerX, this.centerY);
       this.digitalClock.draw(digitalContext, frameTime);
       digitalContext.restore();
     }
@@ -790,8 +785,16 @@ function startClock(faceCanvasId, handsCanvasId, digitalCanvasId)
   var digitalCanvas = document.getElementById(digitalCanvasId);
   
   var faceContext = faceCanvas.getContext('2d');
+  faceContext.width = faceCanvas.width;
+  faceContext.height = faceCanvas.height;
+  
   var handsContext = handsCanvas.getContext('2d');
+  handsContext.width = handsCanvas.width;
+  handsContext.height = handsCanvas.height;
+  
   var digitalContext = digitalCanvas.getContext('2d');
+  digitalContext.width = digitalCanvas.width;
+  digitalContext.height = digitalCanvas.height;
   
   var clock = new Clock(faceCanvas.width / 2,
                    faceCanvas.height / 2,
