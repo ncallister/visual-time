@@ -6,7 +6,8 @@
     <script type="text/javascript" src="js/settings.js"></script>
     <script type="text/javascript" src="js/title.js"></script>
   </head>
-  <body onload="window.mainClock = startClock('faceCanvas', 'handsCanvas', 'digitalCanvas'); initSettings();">
+  <body onload="window.mainClock = startClock('faceCanvas', 'handsCanvas', 'digitalCanvas', 'alarmSound'); initSettings();">
+    <audio id="alarmSound" src="media/alarm.mp3"></audio>
     <div class="canvasContainer">
         <canvas id="faceCanvas" class="faceCanvas" width="500" height="500"></canvas>
         <canvas id="handsCanvas" class="handsCanvas" width="500" height="500"></canvas>

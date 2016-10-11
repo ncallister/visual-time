@@ -50,4 +50,9 @@ function showTimerEnd()
 function updatePlaySound()
 {
   mainClock.playTimerSound = document.getElementById("playTimerSound").checked;
+  
+  if (!mainClock.playTimerSound && mainClock.timerSound && !mainClock.timerSound.paused)
+  {
+    mainClock.timerSound.pause();
+  }
 }

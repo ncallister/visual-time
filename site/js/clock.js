@@ -495,7 +495,7 @@ var Clock = (function()
   
   AnalogClock.prototype.timerEnd = null;
   // Sound file from https://www.freesound.org/people/bone666138/sounds/198841/
-  AnalogClock.prototype.timerSound = new Audio("media/alarm.mp3");
+  AnalogClock.prototype.timerSound = null;
   AnalogClock.prototype.playTimerSound = false;
   
   AnalogClock.prototype.setTimerEnd = function(hour, minute, second)
@@ -813,7 +813,7 @@ var Clock = (function()
   return AnalogClock;
 })();
 
-function startClock(faceCanvasId, handsCanvasId, digitalCanvasId)
+function startClock(faceCanvasId, handsCanvasId, digitalCanvasId, audioId)
 {
   var faceCanvas = document.getElementById(faceCanvasId);
   var handsCanvas = document.getElementById(handsCanvasId);
@@ -836,6 +836,11 @@ function startClock(faceCanvasId, handsCanvasId, digitalCanvasId)
                    Math.min(faceCanvas.width, faceCanvas.height) * 0.45);
   var frameTime = new Date();
   frameTime.setMilliseconds(0);
+  
+  if (audioId)
+  {
+    clock.timerSound = document.getElementById(audioId);
+  }
   
   clock.draw(faceContext, handsContext, digitalContext, frameTime);
     
