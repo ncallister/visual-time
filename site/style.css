@@ -1,3 +1,9 @@
+body
+{
+    background-color: black;
+    color: white;
+}
+
 .canvasContainer
 {
   border: 0px solid black; 

@@ -202,7 +202,7 @@ var DigitalClock = (function()
   DigitalClock.prototype.showSeconds = true;
   
   DigitalClock.prototype.backgroundColour = "white";
-  DigitalClock.prototype.backgroundAlpha = 0.3;
+  DigitalClock.prototype.backgroundAlpha = 0.5;
   DigitalClock.prototype.backgroundPadding =
   {
     top: 0.5,     // Factor of font height
@@ -269,7 +269,7 @@ var DigitalClock = (function()
     
     context2d.translate(this.centerX, this.centerY);
     var oldFont = context2d.font;
-    context2d.font = Math.ceil(this.height.toString()).toString() +
+    context2d.font = "bold " + Math.ceil(this.height.toString()).toString() +
             "px monospace";
     var oldBaseline = context2d.textBaseline;
     context2d.textBaseline = "middle";
@@ -397,10 +397,18 @@ var Clock = (function()
     this.radius = radius;
     
     this.digitalClock = new DigitalClock(centerX, centerY + 0.5 * this.radius, 0.1 * this.radius);
+    this.sincDigitalClockColours();
+  };
+  
+  AnalogClock.prototype.sincDigitalClockColours = function()
+  {
     this.digitalClock.hoursColour = this.hourHand.colour;
     this.digitalClock.minutesColour = this.minuteHand.colour;
     this.digitalClock.secondsColour = this.secondHand.colour;
-  };
+    this.digitalClock.dividerColour = this.rimColour;
+    this.digitalClock.ampmColour = this.rimColour;
+    this.digitalClock.backgroundColour = this.faceColour;
+  }
 
   AnalogClock.prototype.refreshInterval = DEFAULT_REFRESH_INTERVAL;
   AnalogClock.prototype.autoDraw = DEFAULT_AUTO_DRAW;
@@ -414,9 +422,9 @@ var Clock = (function()
   AnalogClock.prototype.bigTickSize = 0.07;
   AnalogClock.prototype.smallTickSize = 0.02;
   
-  AnalogClock.prototype.hourHand = new ClockHand(0.4, 0.04, "darkblue");
-  AnalogClock.prototype.minuteHand = new ClockHand(0.8, 0.02, "darkgreen");
-  AnalogClock.prototype.secondHand = new ClockHand(0.7, 0.01, "maroon");
+  AnalogClock.prototype.hourHand = new ClockHand(0.4, 0.04, "skyblue");
+  AnalogClock.prototype.minuteHand = new ClockHand(0.8, 0.02, "lightgreen");
+  AnalogClock.prototype.secondHand = new ClockHand(0.7, 0.01, "pink");
 
   AnalogClock.prototype.lineWidth = 3;
 
@@ -428,8 +436,8 @@ var Clock = (function()
     this.digitalClock.showSeconds = secondHand;
   }
 
-  AnalogClock.prototype.faceColour = "skyblue";
-  AnalogClock.prototype.rimColour = "black";
+  AnalogClock.prototype.faceColour = "darkblue";
+  AnalogClock.prototype.rimColour = "white";
 
   AnalogClock.prototype.setColourPallete = function(face, rim, hourHand, minuteHand, secondHand)
   {
@@ -460,11 +468,11 @@ var Clock = (function()
 
   AnalogClock.prototype.hourNumbersRadius = 1.06;
   AnalogClock.prototype.hourNumbersFontSize = 0.08;
-  AnalogClock.prototype.hourNumbersColour = "black";
+  AnalogClock.prototype.hourNumbersColour = "white";
 
   AnalogClock.prototype.minuteNumbersRadius = 0.85
   AnalogClock.prototype.minuteNumbersFontSize = 0.05;
-  AnalogClock.prototype.minuteNumbersColour = "black";
+  AnalogClock.prototype.minuteNumbersColour = "white";
 
   AnalogClock.prototype.setHandNumbers = function(extendHands, showHandNumbers)
   {
@@ -486,16 +494,28 @@ var Clock = (function()
   AnalogClock.prototype.showDigital = true;
   
   AnalogClock.prototype.timerEnd = null;
+  // Sound file from https://www.freesound.org/people/bone666138/sounds/198841/
+  AnalogClock.prototype.timerSound = new Audio("media/alarm.mp3");
+  AnalogClock.prototype.playTimerSound = false;
   
   AnalogClock.prototype.setTimerEnd = function(hour, minute, second)
   {
     minute = minute || 0;
     second = second || 0;
     
+    var now = new Date();
+    
     this.timerEnd = new Date();
     this.timerEnd.setHours(hour);
     this.timerEnd.setMinutes(minute);
     this.timerEnd.setSeconds(second);
+    this.timerEnd.setMilliseconds(0);
+    
+    while (this.timerEnd.getTime() < now.getTime())
+    {
+      // wind forward by 1 day until after now
+      this.timerEnd.setTime(this.timerEnd.getTime() + MS_IN_D);
+    }
   }
   
   AnalogClock.prototype.setTimerDuration = function(hours, minutes, seconds)
@@ -507,6 +527,7 @@ var Clock = (function()
     this.timerEnd.setHours(this.timerEnd.getHours() + hours);
     this.timerEnd.setMinutes(this.timerEnd.getMinutes() + minutes);
     this.timerEnd.setSeconds(this.timerEnd.getSeconds() + seconds);
+    this.timerEnd.setMilliseconds(0);
   }
 
   // Drawing
@@ -729,6 +750,17 @@ var Clock = (function()
     if (this.timerEnd && frameTime.getTime() >= this.timerEnd.getTime())
     {
       this.timerEnd = null;
+      if (this.timerSound && this.playTimerSound)
+      {
+        if (!this.timerSound.paused)
+        {
+          this.timerSound.currentTime = 0;
+        }
+        else
+        {
+          this.timerSound.play();
+        }
+      }
     }
     var buffer = this.radius * 0.5;
     
@@ -808,4 +840,43 @@ function startClock(faceCanvasId, handsCanvasId, digitalCanvasId)
   clock.draw(faceContext, handsContext, digitalContext, frameTime);
     
   return clock;
+}
+
+  
+function dayMode()
+{
+  mainClock.faceColour = "skyblue";
+  mainClock.rimColour = "black";
+  mainClock.hourNumbersColour = "black";
+  mainClock.minuteNumbersColour = "black";
+  mainClock.hourHand.colour = "darkblue";
+  mainClock.minuteHand.colour = "darkgreen";
+  mainClock.secondHand.colour = "maroon";
+
+  mainClock.sincDigitalClockColours();
+
+  var bodyCss = document.querySelector("body").style;
+  bodyCss["background-color"]="white";
+  bodyCss.color="black";
+
+  mainClock.faceValid = false;
+}
+
+function nightMode()
+{
+  mainClock.faceColour = "darkblue";
+  mainClock.rimColour = "white";
+  mainClock.hourNumbersColour = "white";
+  mainClock.minuteNumbersColour = "white";
+  mainClock.hourHand.colour = "skyblue";
+  mainClock.minuteHand.colour = "lightgreen";
+  mainClock.secondHand.colour = "pink";
+
+  mainClock.sincDigitalClockColours();
+
+  var bodyCss = document.querySelector("body").style;
+  bodyCss["background-color"]="black";
+  bodyCss.color="white";
+
+  mainClock.faceValid = false;
 }

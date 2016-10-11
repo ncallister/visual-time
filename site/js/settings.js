@@ -1,3 +1,10 @@
+function initSettings()
+{
+  updateSettings();
+  toggleDayNightMode();
+  updatePlaySound();
+}
+
 
 function updateSettings()
 {
@@ -6,6 +13,20 @@ function updateSettings()
   var showSecondHand = document.getElementById("showSecondHand").checked;
 
   mainClock.setShowHands(showHourHand, showMinuteHand, showSecondHand);
+}
+
+function toggleDayNightMode()
+{
+  var isNightMode = document.getElementById("nightMode").checked;
+
+  if (isNightMode)
+  {
+    nightMode();
+  }
+  else
+  {
+    dayMode();
+  }
 }
 
 function showTimerDuration()
@@ -24,4 +45,9 @@ function showTimerEnd()
   var second = parseInt(document.getElementById("endSecond").value) || 0;
   
   mainClock.setTimerEnd(hour, minute, second);
+}
+
+function updatePlaySound()
+{
+  mainClock.playTimerSound = document.getElementById("playTimerSound").checked;
 }
