@@ -169,222 +169,6 @@ var ClockHand = (function()
   return ClockHand;
 })();
 
-
-
-/**
- * Digital Clock
- * 
- * @type DigitalClock
- */
-var DigitalClock = (function()
-{
-  function DigitalClock(centerX, centerY, height)
-  {
-    this.centerX = centerX;
-    this.centerY = centerY;
-    if (height)
-    {
-      this.height = height;
-    }
-  }
-  
-  DigitalClock.prototype.height = 5;
-  
-  DigitalClock.prototype.ampm = true;
-  DigitalClock.prototype.divider = ":";
-  
-  DigitalClock.prototype.hoursColour = null;
-  DigitalClock.prototype.minutesColour = null;
-  DigitalClock.prototype.secondsColour = null;
-  DigitalClock.prototype.dividerColour = null;
-  DigitalClock.prototype.ampmColour = null;
-  
-  DigitalClock.prototype.showSeconds = true;
-  
-  DigitalClock.prototype.backgroundColour = "white";
-  DigitalClock.prototype.backgroundAlpha = 0.5;
-  DigitalClock.prototype.backgroundPadding =
-  {
-    top: 0.5,     // Factor of font height
-    bottom: 0.5,  // Factor of font height
-    left: 1,      // Em
-    right: 1      // Em
-  };
-  DigitalClock.prototype.backgroundHeight = 1.2;
-  DigitalClock.prototype.backgroundWidth = 1.2;   // em
-  
-  function padField(value)
-  {
-    var string = value.toString();
-    while (string.length < 2)
-    {
-      string = "0" + string;
-    }
-    return string;
-  }
-  
-  DigitalClock.prototype.timeToString = function(frameTime)
-  {
-    var timeString = "";
-    
-    var hoursVal = frameTime.getHours();
-    if (this.ampm)
-    {
-      hoursVal %= 12;
-      if (hoursVal === 0)
-      {
-        hoursVal = 12;
-      }
-    }
-    timeString += padField(hoursVal);
-    
-    timeString += this.divider;
-    timeString += padField(frameTime.getMinutes());
-    
-    if (this.showSeconds)
-    {
-      timeString += this.divider;
-      timeString += padField(frameTime.getSeconds());
-    }
-    
-    if (this.ampm)
-    {
-      if (frameTime.getHours() < 12)
-      {
-        timeString += " AM";
-      }
-      else
-      {
-        timeString += " PM";
-      }
-    }
-    
-    return timeString;
-  }
-
-  // Drawing
-  DigitalClock.prototype.draw = function(context2d, frameTime)
-  {
-    context2d.clearRect(0, 0, context2d.width, context2d.height);
-    
-    context2d.translate(this.centerX, this.centerY);
-    var oldFont = context2d.font;
-    context2d.font = "bold " + Math.ceil(this.height.toString()).toString() +
-            "px monospace";
-    var oldBaseline = context2d.textBaseline;
-    context2d.textBaseline = "middle";
-    var oldFillStyle = context2d.fillStyle;
-    
-    var hoursVal = frameTime.getHours();
-    if (this.ampm)
-    {
-      hoursVal %= 12;
-      if (hoursVal === 0)
-      {
-        hoursVal = 12;
-      }
-    }
-    var hours = padField(hoursVal);
-    var minutes = padField(frameTime.getMinutes());
-    var seconds = "";
-    if (this.showSeconds)
-    {
-      seconds = padField(frameTime.getSeconds());
-    }
-    var ampm = "";
-    if (this.ampm)
-    {
-      if (frameTime.getHours() < 12)
-      {
-        ampm = " AM";
-      }
-      else
-      {
-        ampm = " PM";
-      }
-    }
-    
-    var dividerMetrics = context2d.measureText(this.divider);
-    var hoursMetrics = context2d.measureText(hours);
-    var minutesMetrics = context2d.measureText(minutes);
-    var secondsMetrics = context2d.measureText(seconds);
-    var ampmMetrics = context2d.measureText(ampm);
-    
-    var emMetrics = context2d.measureText("m");
-    
-    var dividerCount = 1;
-    if (this.showSeconds)
-    {
-      dividerCount = 2;
-    }
-    
-    var totalWidth = dividerMetrics.width * dividerCount +
-                     hoursMetrics.width +
-                     minutesMetrics.width +
-                     secondsMetrics.width +
-                     ampmMetrics.width;
-    var xLeft = -1 * (totalWidth / 2);
-    
-    var bgPaddingScaled =
-    {
-      top: this.backgroundPadding.top * this.height,
-      bottom: this.backgroundPadding.bottom * this.height,
-      left: this.backgroundPadding.left * emMetrics.width,
-      right: this.backgroundPadding.right * emMetrics.width
-    }
-    
-    context2d.clearRect(0 - (totalWidth / 2) - bgPaddingScaled.left,
-                            0 - (this.height / 2) - bgPaddingScaled.top,
-                            totalWidth + bgPaddingScaled.left + bgPaddingScaled.right,
-                            this.height + bgPaddingScaled.top + bgPaddingScaled.bottom);
-    
-    context2d.fillStyle = (this.backgroundColour)?this.backgroundColour:oldFillStyle;
-    var oldAlpha = context2d.globalAlpha;
-    context2d.globalAlpha = this.backgroundAlpha;
-    context2d.beginPath();
-    context2d.pathRoundRect(0 - (totalWidth / 2) - bgPaddingScaled.left,
-                            0 - (this.height / 2) - bgPaddingScaled.top,
-                            totalWidth + bgPaddingScaled.left + bgPaddingScaled.right,
-                            this.height + bgPaddingScaled.top + bgPaddingScaled.bottom,
-                            Math.min(bgPaddingScaled.top, bgPaddingScaled.bottom));
-    context2d.fill();
-    context2d.globalAlpha = oldAlpha;
-                 
-    context2d.fillStyle = (this.hoursColour)?this.hoursColour:oldFillStyle;
-    context2d.fillText(hours, xLeft, 0);
-    xLeft += hoursMetrics.width;
-    
-    context2d.fillStyle = (this.dividerColour)?this.dividerColour:oldFillStyle;
-    context2d.fillText(this.divider, xLeft, 0);
-    xLeft += dividerMetrics.width;
-    
-    context2d.fillStyle = (this.minutesColour)?this.minutesColour:oldFillStyle;
-    context2d.fillText(minutes, xLeft, 0);
-    xLeft += minutesMetrics.width;
-    
-    if (this.showSeconds)
-    {
-      context2d.fillStyle = (this.dividerColour)?this.dividerColour:oldFillStyle;
-      context2d.fillText(this.divider, xLeft, 0);
-      xLeft += dividerMetrics.width;
-
-      context2d.fillStyle = (this.secondsColour)?this.secondsColour:oldFillStyle;
-      context2d.fillText(seconds, xLeft, 0);
-      xLeft += secondsMetrics.width;
-    }
-    
-    context2d.fillStyle = (this.ampmColour)?this.ampmColour:oldFillStyle;
-    context2d.fillText(ampm, xLeft, 0);
-    
-    context2d.fillStyle = oldFillStyle;
-    context2d.textBaseline = oldBaseline;
-    context2d.font = oldFont;
-    context2d.translate(-1 * this.centerX, -1 * this.centerY);
-  }
-  
-  return DigitalClock;
-})();
-
 var Clock = (function()
 {
   // Clock Constructor
@@ -396,18 +180,20 @@ var Clock = (function()
     this.centerY = centerY;
     this.radius = radius;
     
-    this.digitalClock = new DigitalClock(centerX, centerY + 0.5 * this.radius, 0.1 * this.radius);
-    this.sincDigitalClockColours();
+    this.digitalClock = new DigitalClock(centerX, centerY + 0.3 * this.radius, 0.15 * this.radius);
+    this.sincDigitalClockColours(this.digitalClock);
+    this.digitalCountdown = new DigitalClock(centerX, centerY + 0.5 * this.radius, 0.05 * this.radius);
+    this.sincDigitalClockColours(this.digitalCountdown);
   };
   
-  AnalogClock.prototype.sincDigitalClockColours = function()
+  AnalogClock.prototype.sincDigitalClockColours = function(dClock)
   {
-    this.digitalClock.hoursColour = this.hourHand.colour;
-    this.digitalClock.minutesColour = this.minuteHand.colour;
-    this.digitalClock.secondsColour = this.secondHand.colour;
-    this.digitalClock.dividerColour = this.rimColour;
-    this.digitalClock.ampmColour = this.rimColour;
-    this.digitalClock.backgroundColour = this.faceColour;
+    dClock.hoursStyle.fill = this.hourHand.colour;
+    dClock.minutesStyle.fill = this.minuteHand.colour;
+    dClock.secondsStyle.fill = this.secondHand.colour;
+    dClock.dividerStyle.fill = this.rimColour;
+    dClock.ambleStyle.fill = this.rimColour;
+    dClock.backgroundColour = this.faceColour;
   }
 
   AnalogClock.prototype.refreshInterval = DEFAULT_REFRESH_INTERVAL;
@@ -516,6 +302,8 @@ var Clock = (function()
       // wind forward by 1 day until after now
       this.timerEnd.setTime(this.timerEnd.getTime() + MS_IN_D);
     }
+    
+    this.digitalCountdown.endTime = this.timerEnd;
   }
   
   AnalogClock.prototype.setTimerDuration = function(hours, minutes, seconds)
@@ -528,6 +316,8 @@ var Clock = (function()
     this.timerEnd.setMinutes(this.timerEnd.getMinutes() + minutes);
     this.timerEnd.setSeconds(this.timerEnd.getSeconds() + seconds);
     this.timerEnd.setMilliseconds(0);
+    
+    this.digitalCountdown.endTime = this.timerEnd;
   }
 
   // Drawing
@@ -671,6 +461,12 @@ var Clock = (function()
         frameTime.getSeconds() * MS_IN_S;
     return (2.0 * Math.PI) * (millisThisDay / MS_IN_D) * 2.0;
   }
+  
+  function getHourDurationAngle(startTime, endTime)
+  {
+    var timeDiff = endTime.getTime() - startTime.getTime();
+    return (2.0 * Math.PI) * (timeDiff / MS_IN_D) * 2.0;
+  }
 
   function drawHourHand(clock, context2d, frameTime)
   {
@@ -681,7 +477,13 @@ var Clock = (function()
         clock.timerEnd.getTime() > frameTime.getTime() &&
         clock.timerEnd.getTime() - frameTime.getTime() < MS_IN_D)
     {
-      clock.hourHand.drawTimerArc(clock, context2d, handAngle, getHourHandAngle(clock.timerEnd));
+      var endAngle = handAngle + getHourDurationAngle(frameTime, clock.timerEnd);
+      while ((endAngle - handAngle) > (2.0 * Math.PI))
+      {
+        clock.hourHand.drawTimerArc(clock, context2d, handAngle, handAngle + (2.0 * Math.PI));
+        endAngle -= (2.0 * Math.PI);
+      }
+      clock.hourHand.drawTimerArc(clock, context2d, handAngle, endAngle);
     }
   }
   
@@ -762,7 +564,6 @@ var Clock = (function()
         }
       }
     }
-    var buffer = this.radius * 0.5;
     
     if (!this.faceValid)
     {
@@ -799,10 +600,14 @@ var Clock = (function()
     if (this.showDigital)
     {
       digitalContext.save();
+      digitalContext.clearRect(0, 0, digitalContext.width, digitalContext.height);
       this.digitalClock.draw(digitalContext, frameTime);
+      if (this.timerEnd)
+      {
+        this.digitalCountdown.draw(digitalContext, frameTime);
+      }
       digitalContext.restore();
     }
-    
     
     if (this.autoDraw)
     {
@@ -812,76 +617,3 @@ var Clock = (function()
 
   return AnalogClock;
 })();
-
-function startClock(faceCanvasId, handsCanvasId, digitalCanvasId, audioId)
-{
-  var faceCanvas = document.getElementById(faceCanvasId);
-  var handsCanvas = document.getElementById(handsCanvasId);
-  var digitalCanvas = document.getElementById(digitalCanvasId);
-  
-  var faceContext = faceCanvas.getContext('2d');
-  faceContext.width = faceCanvas.width;
-  faceContext.height = faceCanvas.height;
-  
-  var handsContext = handsCanvas.getContext('2d');
-  handsContext.width = handsCanvas.width;
-  handsContext.height = handsCanvas.height;
-  
-  var digitalContext = digitalCanvas.getContext('2d');
-  digitalContext.width = digitalCanvas.width;
-  digitalContext.height = digitalCanvas.height;
-  
-  var clock = new Clock(faceCanvas.width / 2,
-                   faceCanvas.height / 2,
-                   Math.min(faceCanvas.width, faceCanvas.height) * 0.45);
-  var frameTime = new Date();
-  frameTime.setMilliseconds(0);
-  
-  if (audioId)
-  {
-    clock.timerSound = document.getElementById(audioId);
-  }
-  
-  clock.draw(faceContext, handsContext, digitalContext, frameTime);
-    
-  return clock;
-}
-
-  
-function dayMode()
-{
-  mainClock.faceColour = "skyblue";
-  mainClock.rimColour = "black";
-  mainClock.hourNumbersColour = "black";
-  mainClock.minuteNumbersColour = "black";
-  mainClock.hourHand.colour = "darkblue";
-  mainClock.minuteHand.colour = "darkgreen";
-  mainClock.secondHand.colour = "maroon";
-
-  mainClock.sincDigitalClockColours();
-
-  var bodyCss = document.querySelector("body").style;
-  bodyCss["background-color"]="white";
-  bodyCss.color="black";
-
-  mainClock.faceValid = false;
-}
-
-function nightMode()
-{
-  mainClock.faceColour = "darkblue";
-  mainClock.rimColour = "white";
-  mainClock.hourNumbersColour = "white";
-  mainClock.minuteNumbersColour = "white";
-  mainClock.hourHand.colour = "skyblue";
-  mainClock.minuteHand.colour = "lightgreen";
-  mainClock.secondHand.colour = "pink";
-
-  mainClock.sincDigitalClockColours();
-
-  var bodyCss = document.querySelector("body").style;
-  bodyCss["background-color"]="black";
-  bodyCss.color="white";
-
-  mainClock.faceValid = false;
-}

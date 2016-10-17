@@ -2,100 +2,104 @@
   <head>
     <title>Visual Time</title>
     <link rel="stylesheet" href="style.css" />
-    <script type="text/javascript" src="js/clock.js"></script>
-    <script type="text/javascript" src="js/settings.js"></script>
+    <script type="text/javascript" src="js/drawStyle.js"></script>
+    <script type="text/javascript" src="js/digitalClock.js"></script>
+    <script type="text/javascript" src="js/analogClock.js"></script>
+    <script type="text/javascript" src="js/controls.js"></script>
     <script type="text/javascript" src="js/title.js"></script>
   </head>
   <body onload="window.mainClock = startClock('faceCanvas', 'handsCanvas', 'digitalCanvas', 'alarmSound'); initSettings();">
-    <audio id="alarmSound" src="media/alarm.mp3"></audio>
+    <audio id="alarmSound" preload="auto">
+      <source src="media/alarm.mp3" />
+    </audio>
     <div class="canvasContainer">
-        <canvas id="faceCanvas" class="faceCanvas" width="500" height="500"></canvas>
-        <canvas id="handsCanvas" class="handsCanvas" width="500" height="500"></canvas>
-        <canvas id="digitalCanvas" class="digitalCanvas" width="500" height="500"></canvas>
+      <canvas id="faceCanvas" class="faceCanvas" width="500" height="500"></canvas>
+      <canvas id="handsCanvas" class="handsCanvas" width="500" height="500"></canvas>
+      <canvas id="digitalCanvas" class="digitalCanvas" width="500" height="500"></canvas>
     </div>
     <table class="timer">
-        <tr>
-            <td>
-                Show time duration:
-            </td>
-            <td>
-                <input type="text" id="durationHours" value="00" size="2">
-            </td>
-            <td>
-                :
-            </td>
-            <td>
-                <input type="text" id="durationMinutes" value="00" size="2">
-            </td>
-            <td>
-                :
-            </td>
-            <td>
-                <input type="text" id="durationSeconds" value="00" size="2">
-            </td>
-            <td>
-                <input type="button" id="durationButton" value="Show" onclick="showTimerDuration();">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Show time until (24 hr):
-            </td>
-            <td>
-                <input type="text" id="endHour" value="00" size="2">
-            </td>
-            <td>
-                :
-            </td>
-            <td>
-                <input type="text" id="endMinute" value="00" size="2">
-            </td>
-            <td>
-                :
-            </td>
-            <td>
-                <input type="text" id="endSecond" value="00" size="2">
-            </td>
-            <td>
-                <input type="button" id="endButton" value="Show" onclick="showTimerEnd();">
-            </td>
-        </tr>
-        
-        <tr>
-            <td>
-                <input type="checkbox" id="playTimerSound" onchange="updatePlaySound();">Play sound on time end
-            </td>
-        </tr>
+      <tr>
+        <td>
+          Show time duration:
+        </td>
+        <td>
+          <input type="text" id="durationHours" value="00" size="2">
+        </td>
+        <td>
+          :
+        </td>
+        <td>
+          <input type="text" id="durationMinutes" value="00" size="2">
+        </td>
+        <td>
+          :
+        </td>
+        <td>
+          <input type="text" id="durationSeconds" value="00" size="2">
+        </td>
+        <td>
+          <input type="button" id="durationButton" value="Show" onclick="showTimerDuration();">
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Show time until (24 hr):
+        </td>
+        <td>
+          <input type="text" id="endHour" value="00" size="2">
+        </td>
+        <td>
+          :
+        </td>
+        <td>
+          <input type="text" id="endMinute" value="00" size="2">
+        </td>
+        <td>
+          :
+        </td>
+        <td>
+          <input type="text" id="endSecond" value="00" size="2">
+        </td>
+        <td>
+          <input type="button" id="endButton" value="Show" onclick="showTimerEnd();">
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <input type="checkbox" id="playTimerSound" onchange="updatePlaySound();">Play sound on time end
+        </td>
+      </tr>
     </table>
     <table class="settings">
-        <tr>
-            <td>
-                <h2>Settings</h2>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <input type="checkbox" id="showHourHand" checked onchange="updateSettings();">Show Hours
-            </td>
-        </tr>
-        
-        <tr>
-            <td>
-                <input type="checkbox" id="showMinuteHand" checked onchange="updateSettings();">Show Minutes
-            </td>
-        </tr>
-        
-        <tr>
-            <td>
-                <input type="checkbox" id="showSecondHand" checked onchange="updateSettings();">Show Seconds
-            </td>
-        </tr>
-        
-        <tr>
-            <td>
-                <input type="checkbox" id="nightMode" checked onchange="toggleDayNightMode();">Night Mode
-            </td>
-        </tr>
+      <tr>
+        <td>
+          <h2>Settings</h2>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <input type="checkbox" id="showHourHand" checked onchange="updateSettings();">Show Hours
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <input type="checkbox" id="showMinuteHand" checked onchange="updateSettings();">Show Minutes
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <input type="checkbox" id="showSecondHand" checked onchange="updateSettings();">Show Seconds
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <input type="checkbox" id="nightMode" checked onchange="toggleDayNightMode();">Night Mode
+        </td>
+      </tr>
     </table>
   </body>
 </html>
