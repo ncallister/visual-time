@@ -57,34 +57,51 @@ function updatePlaySound()
   }
 }
 
-function startClock(faceCanvasId, handsCanvasId, digitalCanvasId, audioId)
+function startUp()
+{
+  window.mainClock = createClock('faceCanvas', 'handsCanvas', 'digitalCanvas', 'alarmSound'); 
+  initSettings();
+  drawClock(mainClock);
+}
+
+var faceContext;
+var handsContext;
+var digitalContext;
+
+function createClock(faceCanvasId, handsCanvasId, digitalCanvasId, audioId)
 {
   var faceCanvas = document.getElementById(faceCanvasId);
   var handsCanvas = document.getElementById(handsCanvasId);
   var digitalCanvas = document.getElementById(digitalCanvasId);
   
-  var faceContext = faceCanvas.getContext('2d');
+  faceContext = faceCanvas.getContext('2d');
   faceContext.width = faceCanvas.width;
   faceContext.height = faceCanvas.height;
   
-  var handsContext = handsCanvas.getContext('2d');
+  handsContext = handsCanvas.getContext('2d');
   handsContext.width = handsCanvas.width;
   handsContext.height = handsCanvas.height;
   
-  var digitalContext = digitalCanvas.getContext('2d');
+  digitalContext = digitalCanvas.getContext('2d');
   digitalContext.width = digitalCanvas.width;
   digitalContext.height = digitalCanvas.height;
   
   var clock = new Clock(faceCanvas.width / 2,
                    faceCanvas.height / 2,
                    Math.min(faceCanvas.width, faceCanvas.height) * 0.45);
-  var frameTime = new Date();
-  frameTime.setMilliseconds(0);
   
   if (audioId)
   {
     clock.timerSound = document.getElementById(audioId);
   }
+  
+  return clock;
+}
+
+function drawClock(clock)
+{
+  var frameTime = new Date();
+  frameTime.setMilliseconds(0);
   
   clock.draw(faceContext, handsContext, digitalContext, frameTime);
     
@@ -110,11 +127,12 @@ function dayMode()
   bodyCss.color="black";
 
   mainClock.faceValid = false;
+  drawClock(mainClock);
 }
 
 function nightMode()
 {
-  mainClock.faceColour = "darkblue";
+  mainClock.faceColour = "rgb(50, 50, 50)";
   mainClock.rimColour = "white";
   mainClock.hourNumbersColour = "white";
   mainClock.minuteNumbersColour = "white";
@@ -130,4 +148,5 @@ function nightMode()
   bodyCss.color="white";
 
   mainClock.faceValid = false;
+  drawClock(mainClock);
 }

@@ -188,6 +188,12 @@ var Clock = (function()
   
   AnalogClock.prototype.sincDigitalClockColours = function(dClock)
   {
+    if (!dClock)
+    {
+      this.sincDigitalClockColours(this.digitalClock);
+      this.sincDigitalClockColours(this.digitalCountdown);
+      return;
+    }
     dClock.hoursStyle.fill = this.hourHand.colour;
     dClock.minutesStyle.fill = this.minuteHand.colour;
     dClock.secondsStyle.fill = this.secondHand.colour;
