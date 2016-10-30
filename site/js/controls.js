@@ -146,7 +146,45 @@ function nightMode()
   var bodyCss = document.querySelector("body").style;
   bodyCss["background-color"]="black";
   bodyCss.color="white";
+  bodyCss.display="none";
+  bodyCss.display="";
 
   mainClock.faceValid = false;
   drawClock(mainClock);
+}
+
+function toggleConfigPanel(buttonId, panelId)
+{
+  var configPanels = document.getElementsByClassName("config-panel");
+  var configButtons = document.getElementsByClassName("config-button");
+  var button = document.getElementById(buttonId);
+  var panel = document.getElementById(panelId);
+  var targetDisplay;
+  var targetWeight;
+  if (!panel.style.display || panel.style.display === "none")
+  {
+    targetDisplay = "inline";
+    targetWeight = "bolder";
+  }
+  else
+  {
+    targetDisplay = "none";
+    targetWeight = "normal";
+  }
+  
+  // Reset all buttons
+  for (var i = 0 ; i < configButtons.length ; ++i)
+  {
+    configButtons[i].style["font-weight"] = "normal";
+  }
+  
+  // Hide all panels
+  for (var i = 0 ; i < configPanels.length ; ++i)
+  {
+    configPanels[i].style.display = "none";
+  }
+  
+  // Now set the targets
+  panel.style.display = targetDisplay;
+  button.style["font-weight"] = targetWeight;
 }

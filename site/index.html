@@ -17,89 +17,95 @@
       <canvas id="handsCanvas" class="handsCanvas" width="500" height="500"></canvas>
       <canvas id="digitalCanvas" class="digitalCanvas" width="500" height="500"></canvas>
     </div>
-    <table class="timer">
-      <tr>
-        <td>
-          Show time duration:
-        </td>
-        <td>
-          <input type="text" id="durationHours" value="00" size="2">
-        </td>
-        <td>
-          :
-        </td>
-        <td>
-          <input type="text" id="durationMinutes" value="00" size="2">
-        </td>
-        <td>
-          :
-        </td>
-        <td>
-          <input type="text" id="durationSeconds" value="00" size="2">
-        </td>
-        <td>
-          <input type="button" id="durationButton" value="Show" onclick="showTimerDuration();">
-        </td>
-      </tr>
-      <tr>
-        <td>
-          Show time until (24 hr):
-        </td>
-        <td>
-          <input type="text" id="endHour" value="00" size="2">
-        </td>
-        <td>
-          :
-        </td>
-        <td>
-          <input type="text" id="endMinute" value="00" size="2">
-        </td>
-        <td>
-          :
-        </td>
-        <td>
-          <input type="text" id="endSecond" value="00" size="2">
-        </td>
-        <td>
-          <input type="button" id="endButton" value="Show" onclick="showTimerEnd();">
-        </td>
-      </tr>
+    <div class="config">
+      <h2>Settings</h2>
+      <div>
+        <button id="duration-button" 
+                class="config-button" 
+                onclick="toggleConfigPanel('duration-button', 'duration-panel');">Duration</button>
+        <table id="duration-panel" class="config-panel">
+          <tr>
+            <td>
+              Show time duration:
+            </td>
+            <td>
+              <input type="text" id="durationHours" value="00" size="2">
+            </td>
+            <td>
+              :
+            </td>
+            <td>
+              <input type="text" id="durationMinutes" value="00" size="2">
+            </td>
+            <td>
+              :
+            </td>
+            <td>
+              <input type="text" id="durationSeconds" value="00" size="2">
+            </td>
+            <td>
+              <button id="durationButton" onclick="showTimerDuration();">Show</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Show time until (24 hr):
+            </td>
+            <td>
+              <input type="text" id="endHour" value="00" size="2">
+            </td>
+            <td>
+              :
+            </td>
+            <td>
+              <input type="text" id="endMinute" value="00" size="2">
+            </td>
+            <td>
+              :
+            </td>
+            <td>
+              <input type="text" id="endSecond" value="00" size="2">
+            </td>
+            <td>
+              <button id="endButton" onclick="showTimerEnd();">Show</button>
+            </td>
+          </tr>
 
-      <tr>
-        <td>
-          <input type="checkbox" id="playTimerSound" onchange="updatePlaySound();">Play sound on time end
-        </td>
-      </tr>
-    </table>
-    <table class="settings">
-      <tr>
-        <td>
-          <h2>Settings</h2>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <input type="checkbox" id="showHourHand" checked onchange="updateSettings();">Show Hours
-        </td>
-      </tr>
+          <tr>
+            <td>
+              <input type="checkbox" id="playTimerSound" onchange="updatePlaySound();">Play sound on time end
+            </td>
+          </tr>
+        </table>
+        <button id="settings-button" 
+                class="config-button" 
+                onclick="toggleConfigPanel('settings-button', 'settings-panel');">Settings</button>
+        <table id="settings-panel" class="config-panel">
+          <tr>
+            <td>
+              <input type="checkbox" id="showHourHand" checked onchange="updateSettings();">Show Hours
+            </td>
+          </tr>
 
-      <tr>
-        <td>
-          <input type="checkbox" id="showMinuteHand" checked onchange="updateSettings();">Show Minutes
-        </td>
-      </tr>
+          <tr>
+            <td>
+              <input type="checkbox" id="showMinuteHand" checked onchange="updateSettings();">Show Minutes
+            </td>
+          </tr>
 
-      <tr>
-        <td>
-          <input type="checkbox" id="showSecondHand" checked onchange="updateSettings();">Show Seconds
-        </td>
-      </tr>
+          <tr>
+            <td>
+              <input type="checkbox" id="showSecondHand" checked onchange="updateSettings();">Show Seconds
+            </td>
+          </tr>
 
-      <tr>
-        <td>
-          <input type="checkbox" id="nightMode" checked onchange="toggleDayNightMode();">Night Mode
-        </td>
-      </tr>
-    </table>
+          <tr>
+            <td>
+              <input type="checkbox" id="nightMode" checked onchange="toggleDayNightMode();">Night Mode
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
   </body>
 </html>

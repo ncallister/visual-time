@@ -39,12 +39,37 @@ body
     z-index: 3;
 }
 
-.settings
+.config
 {
-    margin: 0 auto;
+    position: fixed;
+    top: 5px;
+    left: 5px;
+    width: 100%;
+    z-index: 5;
 }
 
-.timer
+.config h2
 {
-    margin: 0 auto;
+    margin: 5px;
+}
+
+.config div
+{
+    position: relative;
+}
+
+.config-button
+{
+    clear: both;
+    float: left;
+    margin: 5px;
+    width: 80px;
+}
+
+.config-panel
+{
+    position: absolute;
+    top: 5px;
+    left: 100px;
+    display: none;
 }
