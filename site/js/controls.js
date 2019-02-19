@@ -40,9 +40,10 @@ function showTimerDuration()
 
 function showTimerEnd()
 {
-  var hour = parseInt(document.getElementById("endHour").value) || 0;
-  var minute = parseInt(document.getElementById("endMinute").value) || 0;
-  var second = parseInt(document.getElementById("endSecond").value) || 0;
+  var endTime = document.getElementById("endTime").valueAsDate;
+  var hour = endTime.getUTCHours() || 0;
+  var minute = endTime.getMinutes() || 0;
+  var second = endTime.getSeconds() || 0;
   
   mainClock.setTimerEnd(hour, minute, second);
 }

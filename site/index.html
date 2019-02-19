@@ -51,20 +51,8 @@
             <td>
               Show time until (24 hr):
             </td>
-            <td>
-              <input type="text" id="endHour" value="00" size="2">
-            </td>
-            <td>
-              :
-            </td>
-            <td>
-              <input type="text" id="endMinute" value="00" size="2">
-            </td>
-            <td>
-              :
-            </td>
-            <td>
-              <input type="text" id="endSecond" value="00" size="2">
+            <td colspan="5">
+              <input type="time" id="endTime" name="endTime" value="00:00" min="00:00" max="24:00" step="1">
             </td>
             <td>
               <button id="endButton" onclick="showTimerEnd();">Show</button>
